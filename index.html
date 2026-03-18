@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="no-nb">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minute Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        .card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #6b7280;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        #codeText {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #2563eb;
+            letter-spacing: 8px;
+            margin: 0;
+            padding: 15px 0;
+            background: #eff6ff;
+            border-radius: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-container {
+            margin: 25px 0;
+            font-size: 1rem;
+            color: #4b5563;
+        }
+
+        #timer {
+            font-weight: 700;
+            color: #ef4444;
+            font-size: 1.2rem;
+            display: inline-block;
+            margin-left: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            background: white;
+            border: 2px solid #f3f4f6;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="card">
+        <h1>Current Auth Code</h1>
+        <p id="codeText">------</p>
+        
+        <div class="timer-container">
+            Next code in: <span id="timer">--:--</span>
+        </div>
+
+        <div id="qrcode"></div>
+        <p class="instruction">Scan with camera to send via SMS</p>
+    </div>
+
+    <script>
+        // 1. Core Code Generation Logic (Now includes minutes!)
+        function getSyncedCode() {
+            const now = new Date();
+            
+            // Added getUTCMinutes() to the seed so it changes every 60 seconds
+            const seedStr = `${now.getUTCFullYear()}${now.getUTCMonth()}${now.getUTCDate()}${now.getUTCHours()}${now.getUTCMinutes()}`;
+            const seed = parseInt(seedStr, 10);
+
+            let result = Math.abs(Math.sin(seed) * 1000000);
+            return Math.floor(result % 900000) + 100000;
+        }
+
+        // 2. Automate API Check
+        if (window.location.search.includes('api=true')) {
+            document.body.innerHTML = getSyncedCode();
+            window.stop(); 
+        }
+
+        // 3. UI Setup
+        const codeEl = document.querySelector("#codeText");
+        const timerEl = document.querySelector("#timer");
+        let activeCode = null;
+
+        const qrcode = new QRCode(document.querySelector("#qrcode"), {
+            width: 150,
+            height: 150,
+            colorDark : "#1f2937",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        // 4. Timer and Update Logic
+        function runTimer() {
+            const now = new Date();
+            const nextMinute = new Date();
+            
+            // Aim for the top of the next minute
+            nextMinute.setUTCMinutes(now.getUTCMinutes() + 1, 0, 0);
+
+            const diff = nextMinute - now;
+
+            // We removed the 'h' (hours) math here completely!
+            const m = Math.floor((diff / 60000) % 60).toString().padStart(2, '0');
+            const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+
+            // Now it just displays MM:SS
+            timerEl.innerHTML = `${m}:${s}`;
+
+            const newCode = getSyncedCode();
+            
+            if (newCode !== activeCode) {
+                activeCode = newCode;
+                codeEl.innerHTML = activeCode;
+                
+                const phoneNumber = "+4748495019";
+                
+                // Using the Android-friendly SMSTO format
+                const smsURI = `SMSTO:${phoneNumber}:${activeCode}`;
+                
+                qrcode.makeCode(smsURI);
+            }
+        }
+
+        setInterval(runTimer, 1000);
+        runTimer();
+
+    </script>
+</body>
+</html>

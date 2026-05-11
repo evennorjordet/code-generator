@@ -80,14 +80,9 @@
         // 1. Core Code Generation Logic (Now includes minutes!)
         function getSyncedCode() {
             const now = new Date();
-            
-            // Added getUTCMinutes() to the seed so it changes every 60 seconds
             const seedStr = `${now.getUTCFullYear()}${now.getUTCMonth()}${now.getUTCDate()}${now.getUTCHours()}${now.getUTCMinutes()}`;
             const seed = parseInt(seedStr, 10) % 1000000;
-            console.log(seed)
-
-            let result = Math.abs(Math.sin(seed) * 1000000);
-            return Math.floor(result % 900000) + 100000;
+            return (seed * 1234567 % 900000) + 100000;
         }
 
         // 2. Automate API Check

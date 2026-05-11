@@ -83,7 +83,7 @@
             
             // Added getUTCMinutes() to the seed so it changes every 60 seconds
             const seedStr = `${now.getUTCFullYear()}${now.getUTCMonth()}${now.getUTCDate()}${now.getUTCHours()}${now.getUTCMinutes()}`;
-            const seed = parseInt(seedStr, 10);
+            const seed = parseInt(seedStr, 10) % 1000000;
 
             let result = Math.abs(Math.sin(seed) * 1000000);
             return Math.floor(result % 900000) + 100000;

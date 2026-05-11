@@ -62,22 +62,6 @@
             margin-left: 5px;
             font-variant-numeric: tabular-nums;
         }
-
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            padding: 15px;
-            background: white;
-            border: 2px solid #f3f4f6;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-
-        .instruction {
-            font-size: 0.85rem;
-            color: #9ca3af;
-            margin: 0;
-        }
     </style>
 </head>
 <body>
@@ -116,14 +100,6 @@
         const timerEl = document.querySelector("#timer");
         let activeCode = null;
 
-        const qrcode = new QRCode(document.querySelector("#qrcode"), {
-            width: 150,
-            height: 150,
-            colorDark : "#1f2937",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
         // 4. Timer and Update Logic
         function runTimer() {
             const now = new Date();
@@ -146,13 +122,6 @@
             if (newCode !== activeCode) {
                 activeCode = newCode;
                 codeEl.innerHTML = activeCode;
-                
-                const phoneNumber = "+4748495019";
-                
-                // Using the Android-friendly SMSTO format
-                const smsURI = `SMSTO:${phoneNumber}:${activeCode}`;
-                
-                qrcode.makeCode(smsURI);
             }
         }
 
